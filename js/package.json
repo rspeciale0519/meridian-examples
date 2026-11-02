@@ -1,0 +1,17 @@
+{
+  "name": "meridian-x402-examples",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node meridian.mjs"
+  },
+  "dependencies": {
+    "@x402/evm": "2.29.0",
+    "@x402/fetch": "2.29.0",
+    "viem": "2.57.14"
+  }
+}

@@ -1,0 +1,22 @@
+# dependencies (package-lock.json is committed on purpose)
+node_modules/
+__pycache__/
+.venv/
+venv/
+env/
+
+# secrets: never commit keys, wallets or env files
+.env
+.env.*
+!.env.example
+.envrc
+*.key
+*.pem
+keystore/
+UTC--*
+secrets.json
+receipt*.json
+
+# SSH keys
+id_rsa
+id_*
