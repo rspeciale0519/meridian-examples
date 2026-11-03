@@ -9,7 +9,7 @@ Usage: python meridian.py [demo|unpaid|pay|all]   (default: demo + unpaid; never
 The wallet key is read from the EVM_PRIVATE_KEY environment variable. Never hardcode a key.
 
 Nothing here trusts the 402 response. Before anything is signed, the client checks:
-  - origin:  requests go only to https://workers.miodiollc.com (no user-info, no redirects)
+  - origin:  requests go only to https://meridian.miodiollc.com (no user-info, no redirects)
   - network: eip155:8453 (Base) only, scheme "exact" only
   - asset:   Base USDC only
   - payTo:   Meridian's pinned pay-to address only
@@ -26,7 +26,7 @@ from urllib.parse import unquote
 
 import httpx
 
-MERIDIAN_ORIGIN = "https://workers.miodiollc.com"
+MERIDIAN_ORIGIN = "https://meridian.miodiollc.com"
 NETWORK = "eip155:8453"  # Base mainnet
 USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
 # Meridian's pay-to address, pinned here on purpose. Check it against /.well-known/x402 and /docs
@@ -54,7 +54,7 @@ def base_origin() -> httpx.URL:
     if u.userinfo:
         raise SystemExit("MERIDIAN_BASE_URL must not contain user-info")
     if u.scheme not in ("http", "https") or not u.host or u.raw_path not in (b"", b"/") or u.fragment:
-        raise SystemExit("MERIDIAN_BASE_URL must be an origin only, like https://workers.miodiollc.com")
+        raise SystemExit("MERIDIAN_BASE_URL must be an origin only, like https://meridian.miodiollc.com")
     origin = httpx.URL(scheme=u.scheme, host=u.host, port=u.port)
     origin_text = str(origin).rstrip("/")
     pinned = httpx.URL(MERIDIAN_ORIGIN)

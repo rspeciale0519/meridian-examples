@@ -2,7 +2,7 @@
 # Print every paid route and every payment option it accepts, from the live discovery document.
 # Free, no payment.
 set -euo pipefail
-BASE="https://workers.miodiollc.com"
+BASE="https://meridian.miodiollc.com"
 curl -sS "$BASE/.well-known/x402" | python3 -c '
 import json, sys
 d = json.load(sys.stdin)

@@ -8,7 +8,7 @@
 #
 # Usage: ./meridian.sh [demo|unpaid|pay|all]   (default: demo + unpaid; never pays)
 set -euo pipefail
-MERIDIAN_ORIGIN="https://workers.miodiollc.com"
+MERIDIAN_ORIGIN="https://meridian.miodiollc.com"
 BASE="${MERIDIAN_BASE_URL:-$MERIDIAN_ORIGIN}"; BASE="${BASE%/}"
 PAID_PATH="${MERIDIAN_PAID_PATH:-/v1/risk/0x0000000000000000000000000000000000000001?chain=base}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
