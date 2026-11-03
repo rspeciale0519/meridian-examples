@@ -2,10 +2,12 @@
 
 Meridian is a read-only, pay-per-call HTTP API from MioDio LLC. It returns DeFi risk cards built from public on-chain reads, an OFAC SDN exact-match address screen, a parameter-drift check for unsigned transactions, and a transaction simulation dry run. There are no API keys or accounts: each paid call costs a fraction of a dollar in USDC on Base, paid with the [x402](https://github.com/coinbase/x402) protocol (HTTP 402, x402 v2, `exact` scheme).
 
-- Live API: <https://workers.miodiollc.com>
-- Docs: <https://workers.miodiollc.com/docs>
-- Terms: <https://workers.miodiollc.com/terms>
-- Machine-readable discovery: <https://workers.miodiollc.com/.well-known/x402> · [/openapi.json](https://workers.miodiollc.com/openapi.json) · [/llms.txt](https://workers.miodiollc.com/llms.txt)
+- Live API: <https://meridian.miodiollc.com>
+- Docs: <https://meridian.miodiollc.com/docs>
+- Terms: <https://meridian.miodiollc.com/terms>
+- Machine-readable discovery: <https://meridian.miodiollc.com/.well-known/x402> · [/openapi.json](https://meridian.miodiollc.com/openapi.json) · [/llms.txt](https://meridian.miodiollc.com/llms.txt)
+
+`https://workers.miodiollc.com` still works permanently with no redirect, so existing integrations do not need to change.
 
 > Data only. Not financial, legal, investment, security or compliance advice. Reads are best-effort and point-in-time and can be stale or partial. Always verify on-chain. Meridian never holds your keys or signs your transactions, and never moves your funds.
 
@@ -25,14 +27,14 @@ These demos use fixed public inputs and return real cards:
 
 | Demo | Shows |
 |---|---|
-| [/v1/demo/risk](https://workers.miodiollc.com/v1/demo/risk) | Aave v3 risk card |
-| [/v1/demo/sanctions](https://workers.miodiollc.com/v1/demo/sanctions) | OFAC SDN screen of a listed address (a match) |
-| [/v1/demo/vault](https://workers.miodiollc.com/v1/demo/vault) | ERC-4626 vault card |
-| [/v1/demo/drift](https://workers.miodiollc.com/v1/demo/drift) | A USDC transfer whose recipient was swapped (verdict `drift`) |
-| [/v1/demo/simulate](https://workers.miodiollc.com/v1/demo/simulate) | Dry run of a small sample ETH transfer on Base |
+| [/v1/demo/risk](https://meridian.miodiollc.com/v1/demo/risk) | Aave v3 risk card |
+| [/v1/demo/sanctions](https://meridian.miodiollc.com/v1/demo/sanctions) | OFAC SDN screen of a listed address (a match) |
+| [/v1/demo/vault](https://meridian.miodiollc.com/v1/demo/vault) | ERC-4626 vault card |
+| [/v1/demo/drift](https://meridian.miodiollc.com/v1/demo/drift) | A USDC transfer whose recipient was swapped (verdict `drift`) |
+| [/v1/demo/simulate](https://meridian.miodiollc.com/v1/demo/simulate) | Dry run of a small sample ETH transfer on Base |
 
 ```bash
-curl -s https://workers.miodiollc.com/v1/demo/drift
+curl -s https://meridian.miodiollc.com/v1/demo/drift
 ```
 
 ## Paid endpoints and prices
@@ -54,7 +56,7 @@ Read from the live discovery document `GET /.well-known/x402` (Meridian v0.8.0) 
 
 The atomic amount is in USDC base units (6 decimals, so 5000 = $0.005). It is not a dollar figure: never put it in `MERIDIAN_MAX_PER_CALL`, which takes dollars like `'$0.02'`.
 
-Every paid route is paid on network `eip155:8453` (Base) in USDC (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, 6 decimals). Meridian's pay-to address is `0x4DA1ED782BD61BaE9AdD5a5CaBbCf32f767f8d7F`. **Pin it in your client** and refuse any 402 that names a different pay-to, network or asset: a 402 is just a response header, so anyone who can answer the request (a proxy, a redirect target, a typo'd host) can ask for money. Check the address yourself against [/.well-known/x402](https://workers.miodiollc.com/.well-known/x402) and [/docs](https://workers.miodiollc.com/docs) before you pay. Request details for each route, including `?chain=base|ethereum` on the address cards and the JSON bodies for the POST routes, are in [/docs](https://workers.miodiollc.com/docs) and [/openapi.json](https://workers.miodiollc.com/openapi.json).
+Every paid route is paid on network `eip155:8453` (Base) in USDC (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, 6 decimals). Meridian's pay-to address is `0x4DA1ED782BD61BaE9AdD5a5CaBbCf32f767f8d7F`. **Pin it in your client** and refuse any 402 that names a different pay-to, network or asset: a 402 is just a response header, so anyone who can answer the request (a proxy, a redirect target, a typo'd host) can ask for money. Check the address yourself against [/.well-known/x402](https://meridian.miodiollc.com/.well-known/x402) and [/docs](https://meridian.miodiollc.com/docs) before you pay. Request details for each route, including `?chain=base|ethereum` on the address cards and the JSON bodies for the POST routes, are in [/docs](https://meridian.miodiollc.com/docs) and [/openapi.json](https://meridian.miodiollc.com/openapi.json).
 
 ## How the payment works
 
@@ -91,14 +93,14 @@ node js/meridian.mjs pay           # pays for GET /v1/risk/0x...0001?chain=base
 | `MERIDIAN_MAX_PER_CALL` | Spend cap per payment in **US dollars**, written with a `$` prefix and single-quoted in the shell: `'$0.02'` (default). Bare numbers such as `20000` are rejected, so atomic units can't be mistaken for dollars. Hard maximum `'$0.10'` (the batch screen needs `'$0.10'`). |
 | `MERIDIAN_PAID_PATH` | Which GET route to pay for. Must be a plain path starting with one `/` (no `@`, backslash or spaces). |
 | `MERIDIAN_RECEIPT_FILE` | Optional. Saves the full `Meridian-Receipt` (it contains a bearer id) to this file with mode `0600` (an existing file is reset to `0600`; a symlink or non-regular file is refused). Receipt ids are redacted from everything printed to the terminal. |
-| `MERIDIAN_BASE_URL` + `MERIDIAN_ALLOW_OTHER_ORIGIN=1` | Testing only, for a local mock server. Without the second variable any origin other than `https://workers.miodiollc.com` is refused. Even with it, the URL must be `https://`; plain `http://` is allowed only for `127.0.0.1` or `localhost`. |
+| `MERIDIAN_BASE_URL` + `MERIDIAN_ALLOW_OTHER_ORIGIN=1` | Testing only, for a local mock server. Without the second variable any origin other than `https://meridian.miodiollc.com` is refused. Even with it, the URL must be `https://`; plain `http://` is allowed only for `127.0.0.1` or `localhost`. |
 
 ### Wallet safety: what the examples check before signing
 
 Never use a main wallet key and never commit a key. `.env` and common key files are git-ignored. Nothing in a 402 response is trusted. Before any payment is signed, every example (JS, Python, and curl through `js/payment-header.mjs`) enforces all of these and refuses to pay if any check fails:
 
 - **Opt-in:** nothing is signed unless `MERIDIAN_PAY=1` and `EVM_PRIVATE_KEY` are set.
-- **Origin:** requests go only to `https://workers.miodiollc.com`. URLs with user-info (`user@host`) or a path that could change the host are rejected.
+- **Origin:** requests go only to `https://meridian.miodiollc.com`. URLs with user-info (`user@host`) or a path that could change the host are rejected.
 - **No redirects:** redirects are never followed (`redirect: "error"` in JS, `follow_redirects=False` in Python, no `-L` in curl), so a signed payment can't be sent to another host.
 - **Network:** only `eip155:8453` (Base) is registered and accepted, so a 402 for Ethereum mainnet or a testnet is refused.
 - **Scheme:** only `exact`.
@@ -111,9 +113,9 @@ Never use a main wallet key and never commit a key. `.env` and common key files 
 
 A paid, settled `2xx` can include a `Meridian-Receipt` header: base64 JSON signed with Ed25519.
 
-- Public keys: [/.well-known/meridian-receipt-keys.json](https://workers.miodiollc.com/.well-known/meridian-receipt-keys.json)
-- Copy-paste offline verifier: [/receipt-verify.ts](https://workers.miodiollc.com/receipt-verify.ts)
-- Rules (canonical bytes, key status, timestamps): see "Verify a Meridian-Receipt" in [/docs](https://workers.miodiollc.com/docs)
+- Public keys: [/.well-known/meridian-receipt-keys.json](https://meridian.miodiollc.com/.well-known/meridian-receipt-keys.json)
+- Copy-paste offline verifier: [/receipt-verify.ts](https://meridian.miodiollc.com/receipt-verify.ts)
+- Rules (canonical bytes, key status, timestamps): see "Verify a Meridian-Receipt" in [/docs](https://meridian.miodiollc.com/docs)
 
 After the signature checks out, also confirm the matching on-chain USDC transfer on Base. Treat the receipt id as a bearer secret: don't share `GET /v1/receipt/:id` links. A receipt is not a payment and can't unlock another call.
 

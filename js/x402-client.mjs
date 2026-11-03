@@ -2,7 +2,7 @@
 // The wallet key is read from the EVM_PRIVATE_KEY environment variable. Never hardcode a key.
 //
 // Nothing here trusts the 402 response. Before anything is signed, the client checks:
-//   - origin:  requests go only to https://workers.miodiollc.com (no user-info, no redirects)
+//   - origin:  requests go only to https://meridian.miodiollc.com (no user-info, no redirects)
 //   - network: eip155:8453 (Base) only, scheme "exact" only
 //   - asset:   Base USDC only
 //   - payTo:   Meridian's pinned pay-to address only
@@ -11,7 +11,7 @@ import { x402Client } from "@x402/fetch";
 import { ExactEvmScheme } from "@x402/evm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
 
-export const MERIDIAN_ORIGIN = "https://workers.miodiollc.com";
+export const MERIDIAN_ORIGIN = "https://meridian.miodiollc.com";
 export const NETWORK = "eip155:8453"; // Base mainnet
 export const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 // Meridian's pay-to address, pinned here on purpose. Check it against /.well-known/x402 and /docs
@@ -27,11 +27,11 @@ const LOOPBACK = new Set(["127.0.0.1", "localhost", "[::1]"]);
 export function baseOrigin() {
   const raw = process.env.MERIDIAN_BASE_URL || MERIDIAN_ORIGIN;
   if (/\s/.test(raw)) throw new Error("MERIDIAN_BASE_URL must not contain spaces or other whitespace");
-  if (!/^https?:\/\/[^/?#\\]/i.test(raw)) throw new Error("MERIDIAN_BASE_URL must start with https:// (an origin only, like https://workers.miodiollc.com)");
+  if (!/^https?:\/\/[^/?#\\]/i.test(raw)) throw new Error("MERIDIAN_BASE_URL must start with https:// (an origin only, like https://meridian.miodiollc.com)");
   let u;
   try { u = new URL(raw); } catch { throw new Error("MERIDIAN_BASE_URL is not a valid URL"); }
   if (u.username || u.password) throw new Error("MERIDIAN_BASE_URL must not contain user-info");
-  if (u.pathname !== "/" || u.search || u.hash) throw new Error("MERIDIAN_BASE_URL must be an origin only, like https://workers.miodiollc.com");
+  if (u.pathname !== "/" || u.search || u.hash) throw new Error("MERIDIAN_BASE_URL must be an origin only, like https://meridian.miodiollc.com");
   if (u.origin !== MERIDIAN_ORIGIN && process.env.MERIDIAN_ALLOW_OTHER_ORIGIN !== "1") {
     throw new Error(`Refusing origin ${u.origin}: only ${MERIDIAN_ORIGIN} is allowed (set MERIDIAN_ALLOW_OTHER_ORIGIN=1 for a local test server)`);
   }
