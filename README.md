@@ -1,6 +1,6 @@
 # Meridian x402 examples
 
-Meridian is a read-only, pay-per-call HTTP API from MioDio LLC. It returns DeFi risk cards built from public on-chain reads, an OFAC SDN exact-match address screen, a parameter-drift check for unsigned transactions, and a transaction simulation dry run. There are no API keys or accounts: each paid call costs a fraction of a dollar in USDC on Base, paid with the [x402](https://github.com/coinbase/x402) protocol (HTTP 402, x402 v2, `exact` scheme).
+Meridian is a read-only, pay-per-call HTTP API from MioDio LLC. It returns twelve pre-sign checks built from public on-chain reads: Aave v3 risk cards, Lido stETH exit-risk, ERC-4626 vault risk, a deep passport that joins those reads, an OFAC SDN exact-match address screen, a passport-plus-sanctions bundle, an OFAC SDN batch screen (1 to 50 addresses), recipient readiness (including an address-poisoning / lookalike field), an x402 seller preflight, a Base USDC payment check, a signature decoder / parameter-drift check for unsigned transactions (intent optional), and a transaction simulation dry run. There are no API keys or accounts: each paid call costs a fraction of a dollar in USDC on Base, paid with the [x402](https://github.com/coinbase/x402) protocol (HTTP 402, x402 v2, `exact` scheme).
 
 - Live API: <https://meridian.miodiollc.com>
 - Docs: <https://meridian.miodiollc.com/docs>
@@ -15,9 +15,11 @@ Meridian is a read-only, pay-per-call HTTP API from MioDio LLC. It returns DeFi 
 
 Run Meridian right before an agent or wallet signs something:
 
-1. **Drift:** `POST /v1/drift` compares what you meant to do (the declared intent: action, recipient or spender, token, amount, expected contract) against the exact unsigned transaction or EIP-712 payload you are about to sign. The verdict is `match`, `drift` or `cannot_verify`, with a per-field diff. Unknown calldata is always `cannot_verify`, never `match`.
+1. **Drift:** `POST /v1/drift` is a signature decoder / parameter-drift check (intent optional). With an intent (action, recipient or spender, token, amount, expected contract) it compares that intent against the exact unsigned transaction or EIP-712 payload you are about to sign and returns `match`, `drift` or `cannot_verify`, with a per-field diff. Without an intent it decodes Permit, Permit2, DAI, CoW, Seaport or EIP-7702 payloads and returns `risk_flags` (no `match`/`drift`/`cannot_verify` verdict). An unknown or unsupported EIP-712 `primaryType` returns `UNDECODED_CAUTION`. Unknown transaction calldata is `cannot_verify` when an intent is present; without an intent it is reported as undecoded (limits: `unknown_selector`). Never `match` in either mode.
 2. **Simulate:** `POST /v1/simulate` dry-runs the unsigned transaction against the latest Base or Ethereum state and returns success or revert, gas, native and ERC-20 balance changes, approvals and warnings.
-3. **Counterparty:** `GET /v1/sanctions/:address` checks the recipient against public OFAC SDN digital-currency addresses, and `/v1/risk`, `/v1/vault` or `/v1/passport` read the Aave v3 position, ERC-4626 vault or Lido exit picture behind it.
+3. **Recipient:** `GET /v1/recipient/:address` reports recipient readiness for the address you are about to send to (code on Base vs Ethereum, EIP-7702 vs a known-wallet allowlist, USDC freeze flags on Base and Ethereum, USDT freeze on Ethereum only, OFAC exact match, burn/token flags, and an optional address-poisoning / lookalike field (only when you pass `counterparties` or `from`)).
+4. **Preflight (optional):** `GET /v1/x402-preflight?url=` checks another x402 seller before you pay it.
+5. **Counterparty:** `GET /v1/sanctions/:address` checks the recipient against public OFAC SDN digital-currency addresses, and `/v1/risk`, `/v1/vault` or `/v1/passport` read the Aave v3 position, ERC-4626 vault or Lido exit picture behind it.
 
 A `match` or a clean simulation is not a guarantee that the action is safe. A sanctions "no match" does not mean an address is clean.
 
@@ -39,7 +41,7 @@ curl -s https://meridian.miodiollc.com/v1/demo/drift
 
 ## Paid endpoints and prices
 
-Read from the live discovery document `GET /.well-known/x402` (Meridian v0.8.0) on Nov 2, 2026. Prices can change. The 402 response for each call is the source of truth, and `./curl/prices.sh` prints the current list.
+Read from the live discovery document `GET /.well-known/x402` (Meridian v0.9.0) on Nov 4, 2026. Prices can change. The 402 response for each call is the source of truth, and `./curl/prices.sh` prints the current list.
 
 | Endpoint | What it returns | Price (USDC on Base) | Atomic amount |
 |---|---|---|---|
@@ -50,9 +52,11 @@ Read from the live discovery document `GET /.well-known/x402` (Meridian v0.8.0) 
 | `GET /v1/sanctions/:address` | OFAC SDN exact-match screen | $0.005 | 5000 |
 | `GET /v1/passport-sanctions/:address` | Deep passport + OFAC SDN screen | $0.02 | 20000 |
 | `POST /v1/sanctions/batch` | OFAC SDN batch screen (1 to 50 addresses) | $0.10 | 100000 |
-| `POST /v1/drift` | Parameter-drift check (intent vs. unsigned tx / EIP-712) | $0.005 | 5000 |
+| `POST /v1/drift` | Signature decoder / parameter-drift check (intent optional) | $0.005 | 5000 |
 | `POST /v1/simulate` | Transaction simulation (dry run) | $0.01 | 10000 |
 | `POST /v1/payment-check` | Base USDC payment-check (on-chain read) | $0.005 | 5000 |
+| `GET /v1/recipient/:address` | Recipient readiness | $0.005 | 5000 |
+| `GET /v1/x402-preflight?url=` | x402 seller preflight | $0.005 | 5000 |
 
 The atomic amount is in USDC base units (6 decimals, so 5000 = $0.005). It is not a dollar figure: never put it in `MERIDIAN_MAX_PER_CALL`, which takes dollars like `'$0.02'`.
 
